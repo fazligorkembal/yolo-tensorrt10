@@ -30,8 +30,8 @@ else()
   #link_directories(/workspace/shared/TensorRT-10/lib)
 endif()
 
-#add_library(myplugins SHARED ${PROJECT_SOURCE_DIR}/plugin/yololayer.cu)
-#target_link_libraries(myplugins nvinfer cudart)
+add_library(myplugins SHARED ${PROJECT_SOURCE_DIR}/plugin/yololayer.cu)
+target_link_libraries(myplugins nvinfer cudart)
 
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -41,5 +41,5 @@ file(GLOB_RECURSE SRCS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src
 add_executable(yolo12_det ${PROJECT_SOURCE_DIR}/yolo12_det.cpp ${SRCS})
 target_link_libraries(yolo12_det nvinfer)
 target_link_libraries(yolo12_det cudart)
-#target_link_libraries(yolo12_det myplugins)
+target_link_libraries(yolo12_det myplugins)
 target_link_libraries(yolo12_det ${OpenCV_LIBS})

@@ -14,19 +14,19 @@ ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-RUN apt-get install libgtk* libspdlog-dev libfmt-dev -y
+#RUN apt-get install libgtk* libspdlog-dev libfmt-dev -y
 
-WORKDIR /workspace
-RUN git clone https://github.com/opencv/opencv.git && git clone https://github.com/opencv/opencv_contrib.git && cd opencv && mkdir build
-WORKDIR /workspace/opencv/build
-RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
-    -D WITH_CUDA=ON \
-    -D ENABLE_FAST_MATH=1 \
-    -D CUDA_FAST_MATH=1 \
-    -D WITH_CUBLAS=1 \
-    -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules ..
-RUN make -j$(nproc) && make install
+#WORKDIR /workspace
+#RUN git clone https://github.com/opencv/opencv.git && git clone https://github.com/opencv/opencv_contrib.git && cd opencv && mkdir build
+#WORKDIR /workspace/opencv/build
+#RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
+#    -D CMAKE_INSTALL_PREFIX=/usr/local \
+#    -D WITH_CUDA=ON \
+#    -D ENABLE_FAST_MATH=1 \
+#    -D CUDA_FAST_MATH=1 \
+#    -D WITH_CUBLAS=1 \
+#    -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules ..
+#RUN make -j$(nproc) && make install
 
 RUN pip3 install torch torchvision --upgrade --force-reinstall
 
