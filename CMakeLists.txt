@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(yolov12)
+project(yolov11)
 
 add_definitions(-std=c++11)
 add_definitions(-DAPI_EXPORTS)
@@ -42,15 +42,10 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SRCS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cu)
 
-add_executable(yolo12_det ${PROJECT_SOURCE_DIR}/yolo12_det.cpp ${SRCS})
-target_link_libraries(yolo12_det nvinfer)
-target_link_libraries(yolo12_det cudart)
-target_link_libraries(yolo12_det myplugins)
-target_link_libraries(yolo12_det ${OpenCV_LIBS})
+add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp ${SRCS})
+target_link_libraries(yolo11_det nvinfer)
+target_link_libraries(yolo11_det cudart)
+target_link_libraries(yolo11_det myplugins)
+target_link_libraries(yolo11_det ${OpenCV_LIBS})
 
-add_executable(yolo12_det_webcam ${PROJECT_SOURCE_DIR}/yolo12_det_webcam.cpp ${SRCS})
-target_link_libraries(yolo12_det_webcam nvinfer)
-target_link_libraries(yolo12_det_webcam cudart)
-target_link_libraries(yolo12_det_webcam myplugins)
-target_link_libraries(yolo12_det_webcam ${OpenCV_LIBS})
-target_link_libraries(yolo12_det_webcam ${Boost_LIBRARIES})
+

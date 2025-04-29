@@ -1,1 +1,1 @@
-# yolov12-tensorrt10
+# yolov11-tensorrt10
