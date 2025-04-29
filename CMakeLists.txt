@@ -36,6 +36,10 @@ target_link_libraries(myplugins nvinfer cudart)
 find_package(OpenCV)
 include_directories(${OpenCV_INCLUDE_DIRS})
 
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
+
 file(GLOB_RECURSE SRCS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cu)
 
 add_executable(yolo12_det ${PROJECT_SOURCE_DIR}/yolo12_det.cpp ${SRCS})
@@ -43,3 +47,10 @@ target_link_libraries(yolo12_det nvinfer)
 target_link_libraries(yolo12_det cudart)
 target_link_libraries(yolo12_det myplugins)
 target_link_libraries(yolo12_det ${OpenCV_LIBS})
+
+add_executable(yolo12_det_webcam ${PROJECT_SOURCE_DIR}/yolo12_det_webcam.cpp ${SRCS})
+target_link_libraries(yolo12_det_webcam nvinfer)
+target_link_libraries(yolo12_det_webcam cudart)
+target_link_libraries(yolo12_det_webcam myplugins)
+target_link_libraries(yolo12_det_webcam ${OpenCV_LIBS})
+target_link_libraries(yolo12_det_webcam ${Boost_LIBRARIES})

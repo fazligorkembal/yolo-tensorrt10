@@ -1,3 +1,4 @@
+#pragma once
 #include "block.h"
 #include <assert.h>
 #include <math.h>

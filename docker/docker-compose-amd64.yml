@@ -1,15 +1,15 @@
 version: "3.8"
 services:
-  yolov12:
+  yolo:
     build: .
     runtime: nvidia
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
-      - ../:/home/user/Documents/yolovx-tensorrt10
+      - ../:/home/user/Documents/yolov-tensorrt10
     privileged: true
     environment:
       - DISPLAY
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=all
       - QT_X11_NO_MITSHM=1
-    working_dir: /home/user/Documents/yolovx-tensorrt10
+    working_dir: /home/user/Documents/yolov-tensorrt10
