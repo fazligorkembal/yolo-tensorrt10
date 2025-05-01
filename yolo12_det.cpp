@@ -17,11 +17,12 @@ bool parse_args(int argc, char **argv, std::string &wts, std::string &engine, st
 {
     if (argc < 4)
         return false;
-    if (std::string(argv[1]) == "-s" && (argc == 5 || argc == 7))
+    if (std::string(argv[1]) == "-s" && (argc == 5))
     {
         wts = std::string(argv[2]);
         engine = std::string(argv[3]);
         auto sub_type = std::string(argv[4]);
+
         if (sub_type[0] == 'n')
         {
             gd = 0.50;
@@ -75,14 +76,14 @@ bool parse_args(int argc, char **argv, std::string &wts, std::string &engine, st
     return true;
 }
 
-void serialize_engine(std::string &wts_name, std::string &engine_name, std::string &type, float &gd, float &gw,
-                      int &max_channels)
+void serialize_engine(std::string &wts_name, std::string &engine_name, float &gd, float &gw, int &max_channels,
+                      std::string &type)
 {
     IBuilder *builder = createInferBuilder(gLogger);
     IBuilderConfig *config = builder->createBuilderConfig();
     IHostMemory *serialized_engine = nullptr;
 
-    serialized_engine = buildEngineYolo11Pose(builder, config, DataType::kFLOAT, wts_name, gd, gw, max_channels, type);
+    serialized_engine = buildEngineYolo12Det(builder, config, DataType::kFLOAT, wts_name, gd, gw, max_channels, type);
 
     assert(serialized_engine);
     std::ofstream p(engine_name, std::ios::binary);
@@ -190,25 +191,25 @@ void infer(IExecutionContext &context, cudaStream_t &stream, void **buffers, flo
 
 int main(int argc, char **argv)
 {
-    // yolo11_pose -s ../models/yolo11n-pose.wts ../models/yolo11n-pose.fp32.trt n
-    // yolo11_pose -d ../models/yolo11n-pose.fp32.trt ../images c
+    // yolo12_det -s ../models/yolo12n.wts ../models/yolo12n.fp32.trt n
+    // yolo12_det -d ../models/yolo12n.fp32.trt ../images c
     cudaSetDevice(kGpuId);
     std::string wts_name;
     std::string engine_name;
     std::string img_dir;
-    std::string type;
     std::string cuda_post_process;
+    std::string type;
     int model_bboxes;
-    float gd = 0.0f, gw = 0.0f;
+    float gd = 0, gw = 0;
     int max_channels = 0;
 
     if (!parse_args(argc, argv, wts_name, engine_name, img_dir, type, cuda_post_process, gd, gw, max_channels))
     {
         std::cerr << "Arguments not right!" << std::endl;
-        std::cerr << "./yolo11_pose -s [.wts] [.engine] [n/s/m/l/x]  // serialize model to "
+        std::cerr << "./yolo12_det -s [.wts] [.engine] [n/s/m/l/x]  // serialize model to "
                      "plan file"
                   << std::endl;
-        std::cerr << "./yolo11_pose -d [.engine] ../images  [c/g]// deserialize plan file and run inference"
+        std::cerr << "./yolo12_det -d [.engine] ../images  [c/g]// deserialize plan file and run inference"
                   << std::endl;
         return -1;
     }
@@ -216,7 +217,7 @@ int main(int argc, char **argv)
     // Create a model using the API directly and serialize it to a file
     if (!wts_name.empty())
     {
-        serialize_engine(wts_name, engine_name, type, gd, gw, max_channels);
+        serialize_engine(wts_name, engine_name, gd, gw, max_channels, type);
         return 0;
     }
 
@@ -279,7 +280,8 @@ int main(int argc, char **argv)
         else if (cuda_post_process == "g")
         {
             // Process gpu decode and nms results
-            batch_process(res_batch, decode_ptr_host, img_batch.size(), bbox_element, img_batch);
+            // todo pose in gpu
+            std::cerr << "pose_postprocess is not support in gpu right now" << std::endl;
         }
         // Draw bounding boxes
         draw_bbox_keypoints_line(img_batch, res_batch);
