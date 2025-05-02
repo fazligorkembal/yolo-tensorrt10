@@ -12,6 +12,29 @@ Logger gLogger;
 using namespace nvinfer1;
 const int kOutputSize = kMaxNumOutputBbox * sizeof(Detection) / sizeof(float) + 1;
 
+void serialize_engine(std::string &wts_name, std::string &engine_name, float &gd, float &gw, int &max_channels,
+                      std::string &type)
+{
+    IBuilder *builder = createInferBuilder(gLogger);
+    IBuilderConfig *config = builder->createBuilderConfig();
+    IHostMemory *serialized_engine = nullptr;
+
+    serialized_engine = buildEngineYolo11Det(builder, config, DataType::kFLOAT, wts_name, gd, gw, max_channels, type);
+
+    assert(serialized_engine);
+    std::ofstream p(engine_name, std::ios::binary);
+    if (!p)
+    {
+        std::cout << "could not open plan output file" << std::endl;
+        assert(false);
+    }
+    p.write(reinterpret_cast<const char *>(serialized_engine->data()), serialized_engine->size());
+
+    delete serialized_engine;
+    delete config;
+    delete builder;
+}
+
 bool parse_args(int argc, char **argv, std::string &wts, std::string &engine, std::string &img_dir, std::string &type,
                 std::string &cuda_post_process, float &gd, float &gw, int &max_channels)
 {
@@ -76,27 +99,34 @@ bool parse_args(int argc, char **argv, std::string &wts, std::string &engine, st
     return true;
 }
 
-void serialize_engine(std::string &wts_name, std::string &engine_name, float &gd, float &gw, int &max_channels,
-                      std::string &type)
+void prepare_buffer(ICudaEngine *engine, IExecutionContext &context, float **input_buffer_device, float **output_buffer_device,
+                    float **output_buffer_host, float **decode_ptr_host, float **decode_ptr_device,
+                    std::string cuda_post_process)
 {
-    IBuilder *builder = createInferBuilder(gLogger);
-    IBuilderConfig *config = builder->createBuilderConfig();
-    IHostMemory *serialized_engine = nullptr;
+    assert(engine->getNbIOTensors() == 2);
 
-    serialized_engine = buildEngineYolo12Det(builder, config, DataType::kFLOAT, wts_name, gd, gw, max_channels, type);
+    // Create GPU buffers on device
+    CUDA_CHECK(cudaMalloc((void **)input_buffer_device, kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
+    CUDA_CHECK(cudaMalloc((void **)output_buffer_device, kBatchSize * kOutputSize * sizeof(float)));
 
-    assert(serialized_engine);
-    std::ofstream p(engine_name, std::ios::binary);
-    if (!p)
+    context.setTensorAddress(kInputTensorName, (float *)*input_buffer_device);
+    context.setTensorAddress(kOutputTensorName, (float *)*output_buffer_device);
+
+    if (cuda_post_process == "c")
     {
-        std::cout << "could not open plan output file" << std::endl;
-        assert(false);
+        *output_buffer_host = new float[kBatchSize * kOutputSize];
     }
-    p.write(reinterpret_cast<const char *>(serialized_engine->data()), serialized_engine->size());
-
-    delete serialized_engine;
-    delete config;
-    delete builder;
+    else if (cuda_post_process == "g")
+    {
+        if (kBatchSize > 1)
+        {
+            std::cerr << "Do not yet support GPU post processing for multiple batches" << std::endl;
+            exit(0);
+        }
+        // Allocate memory for decode_ptr_host and copy to device
+        *decode_ptr_host = new float[1 + kMaxNumOutputBbox * bbox_element];
+        CUDA_CHECK(cudaMalloc((void **)decode_ptr_device, sizeof(float) * (1 + kMaxNumOutputBbox * bbox_element)));
+    }
 }
 
 void deserialize_engine(std::string &engine_name, IRuntime **runtime, ICudaEngine **engine,
@@ -124,38 +154,6 @@ void deserialize_engine(std::string &engine_name, IRuntime **runtime, ICudaEngin
     *context = (*engine)->createExecutionContext();
     assert(*context);
     delete[] serialized_engine;
-}
-
-void prepare_buffer(ICudaEngine *engine, IExecutionContext &context, float **input_buffer_device, float **output_buffer_device,
-                    float **output_buffer_host, float **decode_ptr_host, float **decode_ptr_device,
-                    std::string cuda_post_process)
-{
-    assert(engine->getNbIOTensors() == 2);
-    // In order to bind the buffers, we need to know the names of the input and output tensors.
-    // Note that indices are guaranteed to be less than IEngine::getNbBindings()
-
-    // Create GPU buffers on device
-    CUDA_CHECK(cudaMalloc((void **)input_buffer_device, kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
-    CUDA_CHECK(cudaMalloc((void **)output_buffer_device, kBatchSize * kOutputSize * sizeof(float)));
-
-    context.setTensorAddress(kInputTensorName, (float *)*input_buffer_device);
-    context.setTensorAddress(kOutputTensorName, (float *)*output_buffer_device);
-
-    if (cuda_post_process == "c")
-    {
-        *output_buffer_host = new float[kBatchSize * kOutputSize];
-    }
-    else if (cuda_post_process == "g")
-    {
-        if (kBatchSize > 1)
-        {
-            std::cerr << "Do not yet support GPU post processing for multiple batches" << std::endl;
-            exit(0);
-        }
-        // Allocate memory for decode_ptr_host and copy to device
-        *decode_ptr_host = new float[1 + kMaxNumOutputBbox * bbox_element];
-        CUDA_CHECK(cudaMalloc((void **)decode_ptr_device, sizeof(float) * (1 + kMaxNumOutputBbox * bbox_element)));
-    }
 }
 
 void infer(IExecutionContext &context, cudaStream_t &stream, void **buffers, float *output, int batchsize,
@@ -191,8 +189,8 @@ void infer(IExecutionContext &context, cudaStream_t &stream, void **buffers, flo
 
 int main(int argc, char **argv)
 {
-    // yolo12_det -s ../models/yolo12n.wts ../models/yolo12n.fp32.trt n
-    // yolo12_det -d ../models/yolo12n.fp32.trt ../images c
+    // yolo11_det -s ../models/yolo11n.wts ../models/yolo11n.fp32.trt n
+    // yolo11_det -d ../models/yolo11n.fp32.trt ../images c
     cudaSetDevice(kGpuId);
     std::string wts_name;
     std::string engine_name;
@@ -206,10 +204,10 @@ int main(int argc, char **argv)
     if (!parse_args(argc, argv, wts_name, engine_name, img_dir, type, cuda_post_process, gd, gw, max_channels))
     {
         std::cerr << "Arguments not right!" << std::endl;
-        std::cerr << "./yolo12_det -s [.wts] [.engine] [n/s/m/l/x]  // serialize model to "
+        std::cerr << "./yolo11_det -s [.wts] [.engine] [n/s/m/l/x]  // serialize model to "
                      "plan file"
                   << std::endl;
-        std::cerr << "./yolo12_det -d [.engine] ../images  [c/g]// deserialize plan file and run inference"
+        std::cerr << "./yolo11_det -d [.engine] ../images  [c/g]// deserialize plan file and run inference"
                   << std::endl;
         return -1;
     }
@@ -280,11 +278,10 @@ int main(int argc, char **argv)
         else if (cuda_post_process == "g")
         {
             // Process gpu decode and nms results
-            // todo pose in gpu
-            std::cerr << "pose_postprocess is not support in gpu right now" << std::endl;
+            batch_process(res_batch, decode_ptr_host, img_batch.size(), bbox_element, img_batch);
         }
         // Draw bounding boxes
-        draw_bbox_keypoints_line(img_batch, res_batch);
+        draw_bbox(img_batch, res_batch);
         // Save images
         for (size_t j = 0; j < img_batch.size(); j++)
         {
@@ -314,7 +311,5 @@ int main(int argc, char **argv)
     //}
     // std::cout << std::endl;
 
-    std::cout << "Last Layer Dimensions: " << out_dims.d[0] << " " << out_dims.d[1] << " " << out_dims.d[2] << " " << out_dims.d[3] << std::endl;
-    std::cout << "Process done" << std::endl;
     return 0;
 }

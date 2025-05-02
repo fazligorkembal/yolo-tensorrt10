@@ -130,8 +130,6 @@ void prepare_buffer(ICudaEngine *engine, IExecutionContext &context, float **inp
                     std::string cuda_post_process)
 {
     assert(engine->getNbIOTensors() == 2);
-    // In order to bind the buffers, we need to know the names of the input and output tensors.
-    // Note that indices are guaranteed to be less than IEngine::getNbBindings()
 
     // Create GPU buffers on device
     CUDA_CHECK(cudaMalloc((void **)input_buffer_device, kBatchSize * 3 * kInputH * kInputW * sizeof(float)));

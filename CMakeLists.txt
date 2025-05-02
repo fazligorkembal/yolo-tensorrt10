@@ -42,10 +42,15 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SRCS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cu)
 
-add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp ${SRCS})
+add_executable(yolo11_pose ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp ${SRCS})
+target_link_libraries(yolo11_pose nvinfer)
+target_link_libraries(yolo11_pose cudart)
+target_link_libraries(yolo11_pose myplugins)
+target_link_libraries(yolo11_pose ${OpenCV_LIBS})
+
+
+add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_det.cpp ${SRCS})
 target_link_libraries(yolo11_det nvinfer)
 target_link_libraries(yolo11_det cudart)
 target_link_libraries(yolo11_det myplugins)
 target_link_libraries(yolo11_det ${OpenCV_LIBS})
-
-
