@@ -41,12 +41,17 @@ include_directories(${Boost_INCLUDE_DIRS})
 
 
 file(GLOB_RECURSE SRCS ${PROJECT_SOURCE_DIR}/src/*.cpp ${PROJECT_SOURCE_DIR}/src/*.cu)
+add_library(yolo11 ${SRCS})
+target_link_libraries(yolo11 nvinfer)
+target_link_libraries(yolo11 cudart)
+target_link_libraries(yolo11 myplugins)
+target_link_libraries(yolo11 ${OpenCV_LIBS})
+target_include_directories(yolo11 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
-add_executable(yolo11_pose ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp ${SRCS})
-target_link_libraries(yolo11_pose nvinfer)
-target_link_libraries(yolo11_pose cudart)
-target_link_libraries(yolo11_pose myplugins)
-target_link_libraries(yolo11_pose ${OpenCV_LIBS})
+
+add_executable(yolo11_pose ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp)
+target_link_libraries(yolo11_pose yolo11)
+
 
 
 add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_det.cpp ${SRCS})
