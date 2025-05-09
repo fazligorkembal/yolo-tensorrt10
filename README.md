@@ -30,7 +30,6 @@ unzip ultralytics-8.3.0.zip
 cd ultralytics-8.3.0
 # Download models
 wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt -O yolo11n-pose.pt
-wget https://github.com/ultralytics/assets/releases/download/v8.3.0/yolo11n-pose.pt -O yolo11n-pose.pt
 # Generate .wts
 cp [PATH-TO-TENSORRTX]/yolo11/gen_wts.py .
 python gen_wts.py -w yolo11n-pose.pt -o yolo11n-pose.wts -t pose
