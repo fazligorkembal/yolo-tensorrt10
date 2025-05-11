@@ -48,15 +48,29 @@ target_link_libraries(yolo11 myplugins)
 target_link_libraries(yolo11 ${OpenCV_LIBS})
 
 #target_include_directories(yolo11 PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
+
 target_include_directories(yolo11
   INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
+
+install(
+  TARGETS yolo11 myplugins
+  EXPORT yolo11Targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+
+install(
+  DIRECTORY include/
+  DESTINATION include
 )
 
 add_executable(yolo11_pose ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp)
 target_link_libraries(yolo11_pose yolo11)
-
-
 
 add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_det.cpp ${SRCS})
 target_link_libraries(yolo11_det nvinfer)
