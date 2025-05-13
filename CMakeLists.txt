@@ -72,6 +72,10 @@ install(
 add_executable(yolo11_pose ${PROJECT_SOURCE_DIR}/yolo11_pose.cpp)
 target_link_libraries(yolo11_pose yolo11)
 
+add_executable(yolo11_seg ${PROJECT_SOURCE_DIR}/yolo11_seg.cpp)
+target_link_libraries(yolo11_seg yolo11)
+
+
 add_executable(yolo11_det ${PROJECT_SOURCE_DIR}/yolo11_det.cpp ${SRCS})
 target_link_libraries(yolo11_det nvinfer)
 target_link_libraries(yolo11_det cudart)
