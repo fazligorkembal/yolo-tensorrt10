@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(yolov12)
+project(tensorrtforge)
 
-add_definitions(-std=c++11)
-add_definitions(-DAPI_EXPORTS)
-set(CMAKE_CXX_STANDARD 11)
-set(CMAKE_BUILD_TYPE Debug)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 enable_language(CUDA)
@@ -39,4 +38,9 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
+file(GLOB_RECURSE SRCS_SCRATCH src/scratch/*.cpp src/scratch/*.cu)
+add_library(model_segmentation SHARED ${SRCS_SCRATCH})
+target_link_libraries(model_segmentation nvinfer cudart myplugins ${OpenCV_LIBS} ${Boost_LIBRARIES})
 
+add_executable(main_test src/main_test.cpp)
+target_link_libraries(main_test model_segmentation)

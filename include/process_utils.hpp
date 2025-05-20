@@ -41,19 +41,22 @@ class Options
 {
 public:
     Options(std::string model_path,
+            std::string labels_map,
             ModelType model_type,
             ConversionType conversion_type,
             TaskType task_type,
             OptimizationType optimization_type)
         : model_path(model_path),
+          labels_map(labels_map),
           model_type(model_type),
           conversion_type(conversion_type),
           task_type(task_type),
           optimization_type(optimization_type)
     {
     }
-protected:
+
     std::string model_path = "";
+    std::string labels_map = "";
     ModelType model_type = ModelType::None;
     ConversionType conversion_type = ConversionType::None;
     TaskType task_type = TaskType::None;

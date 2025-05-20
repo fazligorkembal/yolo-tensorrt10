@@ -2,8 +2,8 @@
 #include <math.h>
 #include <iostream>
 #include <vector>
-#include "cuda_utils.h"
-#include "types.h"
+#include "scratch/cuda_utils.h"
+#include "scratch/types.h"
 #include "yololayer.h"
 
 namespace Tn
