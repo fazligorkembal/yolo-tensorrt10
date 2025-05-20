@@ -1,8 +1,8 @@
 version: "3.8"
 services:
   tensorrtforge:
-    #build: .
-    image: docker_ros_tensorrt_bridge:latest
+    build: .
+    #image: docker_ros_tensorrt_bridge:latest
     runtime: nvidia
     volumes:
       - /tmp/.X11-unix:/tmp/.X11-unix:rw
