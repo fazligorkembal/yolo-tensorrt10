@@ -136,11 +136,6 @@ void ModelSegmentationScratch::prepare_buffer(TaskType task_type)
     ASSERT(kNumClass == labels_map.size(), "Number of classes must be equal to labels map size, " << kNumClass << " != " << labels_map.size());
 }
 
-void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch)
-{
-    // todo: implement this function
-    ASSERT(false, "This function is not implemented yet ... !");
-}
 void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch, std::vector<cv::Mat> &masks)
 {
     cuda_batch_preprocess(images, device_buffers[0], kInputW, kInputH, stream);
@@ -153,6 +148,7 @@ void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<s
 
     // todo: add gpu post process here
     batch_nms(res_batch, output_buffer_host, images.size(), kOutputSize, kConfThresh, kNmsThresh);
+    
     for (size_t i = 0; i < images.size(); i++)
     {
         auto &det = res_batch[i];
@@ -160,6 +156,7 @@ void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<s
         auto masks_temp = process_mask(&output_seg_buffer_host[i * kOutputSegSize], kOutputSegSize, det);
         draw_mask_bbox(img, det, masks_temp, labels_map);
     }
+        
 }
 
 static cv::Rect get_downscale_rect(float bbox[4], float scale)

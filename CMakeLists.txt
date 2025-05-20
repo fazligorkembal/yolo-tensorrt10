@@ -38,9 +38,22 @@ include_directories(${OpenCV_INCLUDE_DIRS})
 find_package(Boost REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 
-file(GLOB_RECURSE SRCS_SCRATCH src/scratch/*.cpp src/scratch/*.cu)
-add_library(model_segmentation SHARED ${SRCS_SCRATCH})
-target_link_libraries(model_segmentation nvinfer cudart myplugins ${OpenCV_LIBS} ${Boost_LIBRARIES})
+file(GLOB_RECURSE SRCS_SCRATCH src/tensorrtforge.cpp src/scratch/*.cpp src/scratch/*.cu)
+add_library(${PROJECT_NAME} SHARED ${SRCS_SCRATCH})
+target_link_libraries(${PROJECT_NAME} nvinfer cudart myplugins ${OpenCV_LIBS} ${Boost_LIBRARIES})
 
-add_executable(main_test src/main_test.cpp)
-target_link_libraries(main_test model_segmentation)
+target_include_directories(${PROJECT_NAME}
+  INTERFACE
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<INSTALL_INTERFACE:include>
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT ${PROJECT_NAME}Targets
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  INCLUDES DESTINATION include
+)
+

@@ -6,14 +6,14 @@
 #include "scratch/preprocess.h"
 #include "scratch/utils.h"
 
-#include "model.hpp"
+#include "model_base.hpp"
 
 using namespace nvinfer1;
 
-class ModelSegmentationScratch : public Model
+class ModelSegmentationScratch : public ModelBase
 {
 public:
-    explicit ModelSegmentationScratch(const Options options) : Model(options)
+    explicit ModelSegmentationScratch(const Options options) : ModelBase(options)
     {
         // todo: add int8 support
         ASSERT(options_.optimization_type == OptimizationType::fp32 ||
@@ -54,7 +54,6 @@ public:
         prepare_buffer(options_.task_type);
     }
     ~ModelSegmentationScratch() override = default;
-    void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch);
     void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch, std::vector<cv::Mat> &masks);
 
 

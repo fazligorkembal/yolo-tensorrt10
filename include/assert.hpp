@@ -6,8 +6,8 @@
     {                                                                                    \
         if (!(condition))                                                                \
         {                                                                                \
-            std::cerr << "\n\n[ERROR] - " << message << ", file " <<                     \
-            __FILE__ << ", line " << __LINE__ <<                                         \
+            std::cerr << "\n\n[ERROR] - " << message << ", file:" <<                     \
+            __FILE__ << ", line:" << __LINE__ <<                                         \
             "\n\t\t  " << #condition  << std::endl;                                      \
             std::exit(EXIT_FAILURE);                                                     \
         }                                                                                \
