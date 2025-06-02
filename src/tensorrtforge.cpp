@@ -37,6 +37,10 @@ TensorRTForge::TensorRTForge(const std::string model_path,
         case TaskType::detection:
             // model_ = std::make_unique<ModelDetectionScratch>(Options(model_path, model_type, conversion_type, task_type, optimization_type));
             break;
+        case TaskType::pose:
+            model = new ModelPoseScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
+            break;
+
         default:
             ASSERT(false, "Task type not supported");
             break;

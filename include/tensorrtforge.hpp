@@ -1,6 +1,6 @@
 #include "process_utils.hpp"
 #include "scratch/model_segmentation.hpp"
-
+#include "scratch/model_pose.hpp"
 class TensorRTForge
 {
 public:
@@ -14,5 +14,5 @@ public:
     ~TensorRTForge() = default;
 
     //std::unique_ptr<ModelBase> model;
-    ModelSegmentationScratch *model = nullptr;
+    ModelBase *model = nullptr;
 };

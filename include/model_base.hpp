@@ -6,6 +6,7 @@
 #include "assert.hpp"
 #include "process_utils.hpp"
 
+
 class ModelBase
 {
 public:
@@ -22,6 +23,9 @@ public:
                    options_.model_path.ends_with(".plan"),
                "Model path must be a .wts, .engine or .plan file for scratch conversion");
     }
+
+    virtual void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch) = 0;
+    virtual void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch, std::vector<cv::Mat> &masks) = 0;
 
     virtual ~ModelBase() = default;
 
