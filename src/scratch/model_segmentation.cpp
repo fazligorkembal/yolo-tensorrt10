@@ -7,7 +7,7 @@ void ModelSegmentationScratch::serialize(std::string &wts_name, std::string &eng
     IBuilderConfig *config = builder->createBuilderConfig();
     IHostMemory *serialized_engine = nullptr;
 
-    if (options_.model_type == ModelType::yolo11n)
+    if (options_.model_type == ModelType::yolo11n || options_.model_type == ModelType::yolo11x)
     {
         serialized_engine = buildEngineYolo11Seg(builder, config, DataType::kFLOAT, options_.model_path, gd, gw, max_channels, type);
     }
