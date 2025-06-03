@@ -7,3 +7,4 @@ struct DetectionTrack
     float *class_id;
     float *conf;
 };
+

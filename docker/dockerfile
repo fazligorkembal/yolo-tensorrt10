@@ -15,7 +15,7 @@ ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-RUN apt-get install libgtk* libspdlog-dev libfmt-dev libboost-dev ffmpeg libavformat-dev libavcodec-dev libswscale-dev -y
+RUN apt-get install libgtk* libspdlog-dev libfmt-dev libboost-dev ffmpeg libavformat-dev libavcodec-dev libswscale-dev pybind11-dev -y
 
 WORKDIR /workspace
 RUN git clone https://github.com/opencv/opencv.git && git clone https://github.com/opencv/opencv_contrib.git && cd opencv && mkdir build
@@ -30,9 +30,8 @@ RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
     -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules ..
 RUN make -j$(nproc) && make install
 
-RUN pip3 install torch torchvision --upgrade --force-reinstall
+RUN pip3 install torch torchvision ultralytics --upgrade --force-reinstall
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install libgtk* -y
 RUN pip3 install onnxslim onnxruntime-gpu matplotlib tqdm requests psutil
 RUN pip3 install "numpy<2"

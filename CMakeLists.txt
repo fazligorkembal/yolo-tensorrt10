@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 4.0)
+cmake_minimum_required(VERSION 3.28)
 
 project(tensorrtforge)
 
@@ -11,8 +11,6 @@ enable_language(CUDA)
 
 include_directories(include)
 include_directories(plugin)
-
-#set(CUDA_DIR "/usr/local/cuda-12") 
 
 # include and link dirs of cuda and tensorrt, you need adapt them if yours are different
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
@@ -31,13 +29,24 @@ else()
   #link_directories(/workspace/shared/TensorRT-10/lib)
 endif()
 
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})
+
+find_package(Boost REQUIRED)
+include_directories(${Boost_INCLUDE_DIRS})
+
 add_library(myplugins SHARED ${PROJECT_SOURCE_DIR}/plugin/yololayer.cu)
 target_link_libraries(myplugins nvinfer cudart)
 
-find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
+find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development)
+include_directories(${Python_INCLUDE_DIRS})
+
 if(NOT DEFINED PYTHON_INSTALL_DIR)
-    set(PYTHON_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
+    set(PYTHON_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")    
 endif()
+
+include_directories(/usr/include/python3.9)
+message(STATUS "Python include directories: ${Python_INCLUDE_DIRS}")
 
 find_package(pybind11 REQUIRED)
 pybind11_add_module(
@@ -46,15 +55,11 @@ pybind11_add_module(
   src/tracker/tracker_bind.cpp
 )
 
+
 add_library(tracker SHARED src/tracker/trackerlib.cpp)
 add_compile_definitions(MODULE_PATH="${PROJECT_SOURCE_DIR}/src/tracker")
 target_link_libraries(tracker pybind11::embed pybind11::module ${OpenCV_LIBS})
 
-find_package(OpenCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
 
 file(GLOB_RECURSE SRCS_SCRATCH src/tensorrtforge.cpp src/scratch/*.cpp src/scratch/*.cu)
 add_library(${PROJECT_NAME} SHARED ${SRCS_SCRATCH})

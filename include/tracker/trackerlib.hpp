@@ -24,7 +24,7 @@ public:
 private:
     DetectionTrack detection_track_;
     py::scoped_interpreter guard{};
-    py::module tracker_module;
+    py::module_ tracker_module;
     py::object deep_sort_compute;
     py::array_t<uint8_t> img_array;
 };
