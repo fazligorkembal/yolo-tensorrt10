@@ -1,4 +1,4 @@
-FROM nvcr.io/nvidia/tensorrt:24.10-py3
+FROM nvcr.io/nvidia/tensorrt:23.01-py3
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y \
