@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 4.0)
 
 project(tensorrtforge)
 
@@ -11,6 +11,8 @@ enable_language(CUDA)
 
 include_directories(include)
 include_directories(plugin)
+
+#set(CUDA_DIR "/usr/local/cuda-12") 
 
 # include and link dirs of cuda and tensorrt, you need adapt them if yours are different
 if(CMAKE_SYSTEM_PROCESSOR MATCHES "aarch64")
@@ -72,4 +74,3 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
-
