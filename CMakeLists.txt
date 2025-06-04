@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.28)
+cmake_minimum_required(VERSION 3.10)
 
 project(tensorrtforge)
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
+#set(CMAKE_CXX_STANDARD 20)
+#set(CMAKE_CXX_STANDARD_REQUIRED ON)
+#set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
 enable_language(CUDA)
@@ -29,53 +29,17 @@ else()
   #link_directories(/workspace/shared/TensorRT-10/lib)
 endif()
 
-find_package(OpenCV)
-include_directories(${OpenCV_INCLUDE_DIRS})
-
-find_package(Boost REQUIRED)
-include_directories(${Boost_INCLUDE_DIRS})
-
 add_library(myplugins SHARED ${PROJECT_SOURCE_DIR}/plugin/yololayer.cu)
 target_link_libraries(myplugins nvinfer cudart)
 
-find_package(Python 3.9 REQUIRED COMPONENTS Interpreter Development)
-include_directories(${Python_INCLUDE_DIRS})
-
+find_package(Python3 COMPONENTS Interpreter Development REQUIRED)
 if(NOT DEFINED PYTHON_INSTALL_DIR)
-    set(PYTHON_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/python${Python_VERSION_MAJOR}.${Python_VERSION_MINOR}/site-packages")    
+    set(PYTHON_INSTALL_DIR "${CMAKE_INSTALL_PREFIX}/lib/python${Python3_VERSION_MAJOR}.${Python3_VERSION_MINOR}/site-packages")
 endif()
 
-include_directories(/usr/include/python3.9)
-message(STATUS "Python include directories: ${Python_INCLUDE_DIRS}")
 
-find_package(pybind11 REQUIRED)
-pybind11_add_module(
-  pybind_tracker
-  MODULE
-  src/tracker/tracker_bind.cpp
-)
+find_package(OpenCV)
+include_directories(${OpenCV_INCLUDE_DIRS})
 
 
-add_library(tracker SHARED src/tracker/trackerlib.cpp)
-add_compile_definitions(MODULE_PATH="${PROJECT_SOURCE_DIR}/src/tracker")
-target_link_libraries(tracker pybind11::embed pybind11::module ${OpenCV_LIBS})
 
-
-file(GLOB_RECURSE SRCS_SCRATCH src/tensorrtforge.cpp src/scratch/*.cpp src/scratch/*.cu)
-add_library(${PROJECT_NAME} SHARED ${SRCS_SCRATCH})
-target_link_libraries(${PROJECT_NAME} nvinfer cudart myplugins ${OpenCV_LIBS} ${Boost_LIBRARIES})
-
-target_include_directories(${PROJECT_NAME}
-  INTERFACE
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-  $<INSTALL_INTERFACE:include>
-)
-
-install(
-  TARGETS ${PROJECT_NAME} tracker
-  EXPORT ${PROJECT_NAME}Targets
-  ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib
-  RUNTIME DESTINATION bin
-  INCLUDES DESTINATION include
-)

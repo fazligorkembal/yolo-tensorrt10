@@ -31,13 +31,14 @@ TensorRTForge::TensorRTForge(const std::string model_path,
     switch (task_type)
     {
         case TaskType::segmentation:
-            //model = new ModelSegmentationScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
+            //model = std::make_unique<ModelSegmentationScratch>(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
+            model = new ModelSegmentationScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
             break;
         case TaskType::detection:
-            model = new ModelDetectionScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
+            // model_ = std::make_unique<ModelDetectionScratch>(Options(model_path, model_type, conversion_type, task_type, optimization_type));
             break;
         case TaskType::pose:
-            //model = new ModelPoseScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
+            model = new ModelPoseScratch(Options(model_path, labels_map, model_type, conversion_type, task_type, optimization_type));
             break;
 
         default:
