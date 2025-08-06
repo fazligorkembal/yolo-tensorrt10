@@ -7,14 +7,7 @@ void ModelSegmentationScratch::serialize(std::string &wts_name, std::string &eng
     IBuilderConfig *config = builder->createBuilderConfig();
     IHostMemory *serialized_engine = nullptr;
 
-    if (options_.model_type == ModelType::yolo11n || options_.model_type == ModelType::yolo11x)
-    {
-        serialized_engine = buildEngineYolo11Seg(builder, config, DataType::kFLOAT, options_.model_path, gd, gw, max_channels, type);
-    }
-    else
-    {
-        ASSERT(false, "This model type is not supported yet, please check the model types for supported models");
-    }
+    serialized_engine = buildEngineYolo11Seg(builder, config, DataType::kFLOAT, options_.model_path, gd, gw, max_channels, type);
 
     ASSERT(serialized_engine != nullptr, "Failed to build engine");
     std::ofstream p(engine_path, std::ios::binary);
@@ -61,7 +54,7 @@ void ModelSegmentationScratch::deserialize(std::string &engine_path)
     auto out_dims = engine->getTensorShape(kOutputTensorName);
     batch_size = out_dims.d[0];
 
-    // prepare_buffer(options_.task_type);
+    // prepare_buffer();
 
     std::cout << "Output dimensions: " << out_dims.d[0] << ", " << out_dims.d[1] << ", " << out_dims.d[2] << ", " << out_dims.d[3] << std::endl;
     std::cout << "Engine deserialized successfully, " << engine_path << std::endl;
@@ -69,55 +62,10 @@ void ModelSegmentationScratch::deserialize(std::string &engine_path)
 
 void ModelSegmentationScratch::parse_options(std::string &type, float &gd, float &gw, int &max_channels)
 {
-    if (options_.model_type == ModelType::yolo11n)
-    {
-        gd = 0.50;
-        gw = 0.25;
-        max_channels = 1024;
-        type = "n";
-    }
-    else if (options_.model_type == ModelType::yolo11s)
-    {
-        gd = 0.50;
-        gw = 0.50;
-        max_channels = 1024;
-        type = "s";
-    }
-    else if (options_.model_type == ModelType::yolo11m)
-    {
-        gd = 0.50;
-        gw = 1.00;
-        max_channels = 512;
-        type = "m";
-    }
-    else if (options_.model_type == ModelType::yolo11l)
-    {
-        gd = 1.0;
-        gw = 1.0;
-        max_channels = 512;
-        type = "l";
-    }
-    else if (options_.model_type == ModelType::yolo11x)
-    {
-        gd = 1.0;
-        gw = 1.50;
-        max_channels = 512;
-        type = "x";
-    }
-    else
-    {
-        ASSERT(false, "Invalid model type");
-    }
-
-    ASSERT(gd > 0 && gw > 0, "gd and gw must be greater than 0");
-    ASSERT(max_channels > 0, "max_channels must be greater than 0");
-    ASSERT(type == "n" || type == "s" || type == "m" || type == "l" || type == "x", "Invalid model type");
 }
 
-void ModelSegmentationScratch::prepare_buffer(TaskType task_type)
+void ModelSegmentationScratch::prepare_buffer()
 {
-    ASSERT(task_type == TaskType::segmentation, "Task type must be segmentation");
-
     ASSERT(engine->getNbIOTensors() == 3, "Engine must have 3 IO tensors but got " << engine->getNbIOTensors());
 
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[0], kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
@@ -148,7 +96,7 @@ void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<s
 
     // todo: add gpu post process here
     batch_nms(res_batch, output_buffer_host, images.size(), kOutputSize, kConfThresh, kNmsThresh);
-    
+
     for (size_t i = 0; i < images.size(); i++)
     {
         auto &det = res_batch[i];
@@ -156,7 +104,6 @@ void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<s
         auto masks_temp = process_mask(&output_seg_buffer_host[i * kOutputSegSize], kOutputSegSize, det);
         draw_mask_bbox(img, det, masks_temp, labels_map);
     }
-        
 }
 
 static cv::Rect get_downscale_rect(float bbox[4], float scale)

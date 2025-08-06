@@ -1,13 +1,13 @@
-#include "scratch/model_pose.hpp"
+#include "scratch/model_detection.hpp"
 #include "scratch/model_builder.h"
 
-void ModelPoseScratch::serialize(std::string &wts_name, std::string &engine_path, std::string &type, float &gd, float &gw, int &max_channels)
+void ModelDetectionScratch::serialize(std::string &wts_name, std::string &engine_path, std::string &type, float &gd, float &gw, int &max_channels)
 {
     IBuilder *builder = createInferBuilder(gLogger);
     IBuilderConfig *config = builder->createBuilderConfig();
     IHostMemory *serialized_engine = nullptr;
 
-    serialized_engine = buildEngineYolo11Pose(builder, config, DataType::kFLOAT, options_.model_path, gd, gw, max_channels, type);
+    serialized_engine = buildEngineYolo11Detection(builder, config, DataType::kFLOAT, options_.model_path, gd, gw, max_channels, type);
 
     ASSERT(serialized_engine != nullptr, "Failed to build engine");
     std::ofstream p(engine_path, std::ios::binary);
@@ -22,7 +22,7 @@ void ModelPoseScratch::serialize(std::string &wts_name, std::string &engine_path
     delete builder;
 }
 
-void ModelPoseScratch::deserialize(std::string &engine_path)
+void ModelDetectionScratch::deserialize(std::string &engine_path)
 {
     ASSERT(std::filesystem::exists(engine_path) && std::filesystem::is_regular_file(engine_path), "Engine path must be full-path and a valid file");
     std::ifstream file(engine_path, std::ios::binary);
@@ -60,7 +60,7 @@ void ModelPoseScratch::deserialize(std::string &engine_path)
     std::cout << "Engine deserialized successfully, " << engine_path << std::endl;
 }
 
-void ModelPoseScratch::prepare_buffer()
+void ModelDetectionScratch::prepare_buffer()
 {
     ASSERT(engine->getNbIOTensors() == 2, "Engine must have 2 IO tensors but got " << engine->getNbIOTensors());
 
@@ -73,7 +73,7 @@ void ModelPoseScratch::prepare_buffer()
     output_buffer_host = new float[kBatchSize * kOutputSize];
 }
 
-void ModelPoseScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch)
+void ModelDetectionScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch)
 {
     
     cuda_batch_preprocess(images, device_buffers[0], kInputW, kInputH, stream);
@@ -89,7 +89,7 @@ void ModelPoseScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vect
     draw_bbox_keypoints_line(images, res_batch);
 }
 
-void ModelPoseScratch::parse_options(std::string &type, float &gd, float &gw, int &max_channels)
+void ModelDetectionScratch::parse_options(std::string &type, float &gd, float &gw, int &max_channels)
 {
     
 }

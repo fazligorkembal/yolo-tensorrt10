@@ -10,10 +10,10 @@
 
 using namespace nvinfer1;
 
-class ModelPoseScratch : public ModelBase
+class ModelDetectionScratch : public ModelBase
 {
 public:
-    explicit ModelPoseScratch(const Options options) : ModelBase(options)
+    explicit ModelDetectionScratch(const Options options) : ModelBase(options)
     {
         // todo: add int8 support
         ASSERT(options_.optimization_type == OptimizationType::fp32 ||
@@ -53,13 +53,14 @@ public:
         deserialize(engine_path);
         prepare_buffer();
     }
-    ~ModelPoseScratch() override = default;
+    ~ModelDetectionScratch() override = default;
     void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch) override;
 
     void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch, std::vector<cv::Mat> &masks) override
     {
-        ASSERT(false, "This method is not supported for pose task, please use infer without masks");
+        ASSERT(false, "This method is not supported for detection task, please use infer without masks");
     }
+
 
 private:
     void serialize(std::string &wts_name, std::string &engine_path, std::string &type, float &gd, float &gw, int &max_channels) override;
@@ -80,4 +81,5 @@ private:
     float *output_buffer_host = nullptr;
     float *decode_ptr_host = nullptr;
     float *decode_ptr_device = nullptr;
+    std::unordered_map<int, std::string> labels_map;
 };

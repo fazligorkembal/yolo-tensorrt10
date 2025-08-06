@@ -735,7 +735,7 @@ nvinfer1::IHostMemory *buildEngineYolo11Seg(nvinfer1::IBuilder *builder, nvinfer
     return serialized_model;
 }
 
-nvinfer1::IHostMemory *buildEngineYolo11Det(nvinfer1::IBuilder *builder, nvinfer1::IBuilderConfig *config,
+nvinfer1::IHostMemory *buildEngineYolo11Detection(nvinfer1::IBuilder *builder, nvinfer1::IBuilderConfig *config,
                                             nvinfer1::DataType dt, const std::string &wts_path, float &gd, float &gw,
                                             int &max_channels, std::string &type)
 {

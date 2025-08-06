@@ -15,24 +15,39 @@ ENV LD_LIBRARY_PATH=$CUDNN_DIR/lib64:$LD_LIBRARY_PATH
 ENV CUDA_HOME=/usr/local/cuda
 ENV LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 
-RUN apt-get install libgtk* libspdlog-dev libfmt-dev libboost-dev ffmpeg libavformat-dev libavcodec-dev libswscale-dev -y
+RUN apt-get install libgtk* libspdlog-dev libfmt-dev libboost-dev ffmpeg libavformat-dev libavcodec-dev libswscale-dev pybind11-dev -y 
 
 WORKDIR /workspace
 RUN git clone https://github.com/opencv/opencv.git && git clone https://github.com/opencv/opencv_contrib.git && cd opencv && mkdir build
 WORKDIR /workspace/opencv/build
 RUN cmake -D CMAKE_BUILD_TYPE=RELEASE \
-    -D CMAKE_INSTALL_PREFIX=/usr/local \
+    #-D VIDEO_CODEC_SDK_INCLUDE_DIR:PATH="/usr/local/include" \
+    #-D VIDEO_CODEC_SDK_LIBRARY_DIR:PATH="/usr/local/lib" \
     -D WITH_CUDA=ON \
+    -D WITH_CUDNN=ON \
+    -D OPENCV_DNN_CUDA=ON \
     -D ENABLE_FAST_MATH=1 \
     -D CUDA_FAST_MATH=1 \
     -D WITH_CUBLAS=1 \
+    -D WITH_CUFFT=ON \
+    -D WITH_CUBLAS=1 \
+    -D WITH_NVCUVID=ON \
+    -D BUILD_opencv_cudacodec=ON \
+    -D CUDA_ARCH_BIN=8.9 \  
+    -D WITH_OPENGL=ON \
+    -D WITH_NVCUVID=ON \
     -D WITH_FFMPEG=ON \
+    -D WITH_GSTREAMER=ON \
+    -D WITH_TBB=ON \
+    -D BUILD_TESTS=OFF \
+    -D BUILD_PERF_TESTS=OFF \
+    -D BUILD_EXAMPLES=OFF \
     -D OPENCV_EXTRA_MODULES_PATH=/workspace/opencv_contrib/modules ..
+
 RUN make -j$(nproc) && make install
 
 RUN pip3 install torch torchvision --upgrade --force-reinstall
 
 RUN apt-get update && apt-get upgrade -y
-RUN apt-get install libgtk* -y
 RUN pip3 install onnxslim onnxruntime-gpu matplotlib tqdm requests psutil
 RUN pip3 install "numpy<2"

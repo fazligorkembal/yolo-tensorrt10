@@ -51,7 +51,7 @@ public:
         }
 
         deserialize(engine_path);
-        prepare_buffer(options_.task_type);
+        prepare_buffer();
     }
     ~ModelSegmentationScratch() override = default;
     void infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch) override
@@ -65,7 +65,7 @@ public:
 private:
     void serialize(std::string &wts_name, std::string &engine_path, std::string &type, float &gd, float &gw, int &max_channels) override;
     void deserialize(std::string &engine_path) override;
-    void prepare_buffer(TaskType task_type) override;
+    void prepare_buffer() override;
     void parse_options(std::string &type, float &gd, float &gw, int &max_channels) override;
     std::vector<cv::Mat> process_mask(const float *proto, int proto_size, std::vector<Detection> &dets);
 
