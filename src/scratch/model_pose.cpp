@@ -62,7 +62,7 @@ void ModelPoseScratch::deserialize(std::string &engine_path)
 
 void ModelPoseScratch::prepare_buffer()
 {
-    ASSERT(engine->getNbIOTensors() == 2, "Engine must have 2 IO tensors but got " << engine->getNbIOTensors());
+    ASSERT(engine->getNbIOTensors() == 2, "Engine must have 2 IO tensors but got " + std::to_string(engine->getNbIOTensors()));
 
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[0], kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[1], kBatchSize * kOutputSize * sizeof(float)));

@@ -66,7 +66,7 @@ void ModelSegmentationScratch::parse_options(std::string &type, float &gd, float
 
 void ModelSegmentationScratch::prepare_buffer()
 {
-    ASSERT(engine->getNbIOTensors() == 3, "Engine must have 3 IO tensors but got " << engine->getNbIOTensors());
+    ASSERT(engine->getNbIOTensors() == 3, "Engine must have 3 IO tensors but got " + std::to_string(engine->getNbIOTensors()));
 
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[0], kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[1], kBatchSize * kOutputSize * sizeof(float)));
@@ -81,7 +81,7 @@ void ModelSegmentationScratch::prepare_buffer()
 
     // todo: change this with dynamic label txt
     read_labels(options_.labels_map, labels_map);
-    ASSERT(kNumClass == labels_map.size(), "Number of classes must be equal to labels map size, " << kNumClass << " != " << labels_map.size());
+    ASSERT(kNumClass == labels_map.size(), "Number of classes must be equal to labels map size, " + std::to_string(kNumClass) + " != " + std::to_string(labels_map.size()));
 }
 
 void ModelSegmentationScratch::infer(std::vector<cv::Mat> &images, std::vector<std::vector<Detection>> &res_batch, std::vector<cv::Mat> &masks)

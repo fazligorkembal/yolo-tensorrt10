@@ -56,13 +56,15 @@ void ModelDetectionScratch::deserialize(std::string &engine_path)
 
     // prepare_buffer();
 
-    std::cout << "Output dimensions: " << out_dims.d[0] << ", " << out_dims.d[1] << ", " << out_dims.d[2] << ", " << out_dims.d[3] << std::endl;
-    std::cout << "Engine deserialized successfully, " << engine_path << std::endl;
+    //std::cout << "Output dimensions: " << out_dims.d[0] << ", " << out_dims.d[1] << ", " << out_dims.d[2] << ", " << out_dims.d[3] << std::endl;
+    INFO("Output dimensions: " + std::to_string(out_dims.d[0]) + ", " + std::to_string(out_dims.d[1]) + ", " + std::to_string(out_dims.d[2]) + ", " + std::to_string(out_dims.d[3]));
+    //std::cout << "Engine deserialized successfully, " << engine_path << std::endl;
+    INFO("Engine deserialized successfully, " + engine_path);
 }
 
 void ModelDetectionScratch::prepare_buffer()
 {
-    ASSERT(engine->getNbIOTensors() == 2, "Engine must have 2 IO tensors but got " << engine->getNbIOTensors());
+    ASSERT(engine->getNbIOTensors() == 2, "Engine must have 2 IO tensors but got " + std::to_string(engine->getNbIOTensors()));
 
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[0], kBatchSize * 3 * kInputH * kInputW * sizeof(float)));
     CUDA_CHECK(cudaMalloc((void **)&device_buffers[1], kBatchSize * kOutputSize * sizeof(float)));
@@ -91,5 +93,47 @@ void ModelDetectionScratch::infer(std::vector<cv::Mat> &images, std::vector<std:
 
 void ModelDetectionScratch::parse_options(std::string &type, float &gd, float &gw, int &max_channels)
 {
-    
+    if (options_.model_size == ModelSize::n)
+    {
+        gd = 0.50;
+        gw = 0.25;
+        max_channels = 1024;
+        type = "n";
+    }
+    else if (options_.model_size == ModelSize::s)
+    {
+        gd = 0.50;
+        gw = 0.50;
+        max_channels = 1024;
+        type = "s";
+    }
+    else if (options_.model_size == ModelSize::m)
+    {
+        gd = 0.50;
+        gw = 1.00;
+        max_channels = 512;
+        type = "m";
+    }
+    else if (options_.model_size == ModelSize::l)
+    {
+        gd = 1.0;
+        gw = 1.0;
+        max_channels = 512;
+        type = "l";
+    }
+    else if (options_.model_size == ModelSize::x)
+    {
+        gd = 1.0;
+        gw = 1.50;
+        max_channels = 512;
+        type = "x";
+    }
+    else
+    {
+        ASSERT(false, "Invalid model type");
+    }
+
+    ASSERT(gd > 0 && gw > 0, "gd and gw must be greater than 0");
+    ASSERT(max_channels > 0, "max_channels must be greater than 0");
+    ASSERT(type == "n" || type == "s" || type == "m" || type == "l" || type == "x", "Invalid model type");
 }

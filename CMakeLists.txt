@@ -30,6 +30,7 @@ find_package(OpenCV REQUIRED)
 find_package(Boost REQUIRED)
 
 
+
 include_directories(include)
 include_directories(plugin)
 include_directories(${OpenCV_INCLUDE_DIRS})
@@ -95,3 +96,15 @@ install(
   RUNTIME DESTINATION bin
   INCLUDES DESTINATION include
 )
+
+add_executable(pipeline_benchmarks tests/pipeline_benchmarks.cpp)
+set_source_files_properties(tests/pipeline_benchmarks.cpp PROPERTIES LANGUAGE CUDA)
+target_link_libraries(pipeline_benchmarks nvinfer cudart)
+
+
+add_library(tensorrt_cpp_api SHARED experimental/engine.cpp)
+target_include_directories(tensorrt_cpp_api PUBLIC ${OpenCV_INCLUDE_DIRS} ${CUDA_INCLUDE_DIRS} ${TensorRT_INCLUDE_DIRS})
+target_link_libraries(tensorrt_cpp_api PUBLIC ${OpenCV_LIBS} ${CUDA_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT} ${TensorRT_LIBRARIES} nvonnxparser fmt::fmt)
+
+add_executable(infer1 experimental/infer1.cpp)
+target_link_libraries(infer1 tensorrt_cpp_api nvinfer cudart fmt::fmt ${OpenCV_LIBS} ${Boost_LIBRARIES})
